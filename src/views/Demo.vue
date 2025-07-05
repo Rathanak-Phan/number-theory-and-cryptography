@@ -50,10 +50,11 @@
       >
         Modern Cryptography
       </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="w-full">
+      <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> -->
         <RSA />
-        <HashFunction />
-        <CRC />
+        <!-- <HashFunction /> -->
+        <!-- <CRC /> -->
       </div>
     </section>
 

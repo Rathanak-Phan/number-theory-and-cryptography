@@ -84,3 +84,6 @@ number-theory-cryptography-vue/
    ```bash
    git clone https://github.com/Rathanak-Phan/number-theory-and-cryptography.git
    cd number-theory-and-cryptography
+
+## 👾 What does RSA working ?
+link to [RSA Algorithm](./src/rsa-algorithm.md)

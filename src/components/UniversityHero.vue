@@ -41,17 +41,7 @@
         <p
           class="text-base sm:text-lg md:text-xl max-w-4xl mx-auto leading-relaxed"
         >
-          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Non a
-          repudiandae, explicabo nulla eaque sequi amet, sunt eius architecto,
-          magnam sapiente ipsam quibusdam voluptatibus at quos? Dicta hic
-          perferendis pariatur ipsam, minima ut dolorum similique accusantium
-          vero ex, est inventore laboriosam esse molestiae explicabo numquam
-          quidem recusandae totam suscipit molestias maiores natus quasi
-          blanditiis. Adipisci ut esse sunt doloribus dolores unde, commodi
-          eveniet? At facilis ab iure odio. Dolorem consequuntur cum, odit
-          deleniti velit ipsam. Eius saepe minima vitae similique, ipsam
-          voluptatum tempora ipsum qui delectus? Enim, assumenda sit! Quam, eius
-          fuga! Esse molestias est cumque nam, eaque corporis neque!
+         The Royal University of Phnom Penh (RUPP), founded in 1960, has undergone a series of transformations to become the leading national university in Cambodia. Other transformations are still happening. In the last five years, for example, Rupp has made considerable progresses in many areas including organizational structure, institutional governance, capacity building, infrastructure development, research, teaching and learning, curriculum development, and quality assurance. These achievements have encouraged RUPP management and faculty to strive harder to implement the institutional reform and achieve development goals.
         </p>
         <hr class="border-t-2 border-gray-700 dark:border-gray-200 my-6" />
         <p class="text-base text-gray-700 font-sans">

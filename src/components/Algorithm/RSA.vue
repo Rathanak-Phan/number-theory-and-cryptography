@@ -6,37 +6,37 @@
     <div class="grid grid-cols-2 gap-4 mb-4">
       <div>
         <label class="block text-sm font-medium">Prime p:</label>
-        <input type="number" v-model.number="p" />
+        <input type="number" v-model.number="p" class="w-full px-2 py-1 border rounded-md dark:bg-gray-700" />
       </div>
       <div>
         <label class="block text-sm font-medium">Prime q:</label>
-        <input type="number" v-model.number="q" />
+        <input type="number" v-model.number="q" class="w-full px-2 py-1 border rounded-md dark:bg-gray-700" />
       </div>
       <div>
         <label class="block text-sm font-medium">Public exponent e:</label>
-        <input type="number" v-model.number="e" />
+        <input type="number" v-model.number="e" class="w-full px-2 py-1 border rounded-md dark:bg-gray-700" />
       </div>
       <div>
         <label class="block text-sm font-medium">Message to Encrypt (A–Z):</label>
-        <input type="text" v-model="userInput" class="uppercase" />
+        <input type="text" v-model="userInput" class="uppercase w-full px-2 py-1 border rounded-md dark:bg-gray-700" />
       </div>
     </div>
 
-    <!-- Key + Encryption Buttons -->
+    <!-- Buttons -->
     <div class="flex gap-2 mb-4">
       <button @click="generateKeys" class="flex-1 bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600">🔑 Generate Keys</button>
       <button @click="encryptMessage" class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">Encrypt</button>
-      <button @click="decryptMessage" class="flex-1 bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600">Decrypt</button>
+      <!-- <button @click="decryptMessage" class="flex-1 bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600">Decrypt</button> -->
     </div>
 
-    <!-- Manual Decrypt Input -->
+    <!-- Manual Ciphertext Decryption -->
     <div class="mb-4">
       <label class="block text-sm font-medium">🔐 Ciphertext Blocks (space-separated):</label>
       <input v-model="manualCiphertext" placeholder="e.g. 2081 2182" class="w-full px-2 py-1 mt-1 border rounded-md dark:bg-gray-700 dark:text-white" />
       <button @click="decryptManual" class="mt-2 w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600">🔓 Decrypt Manual Input</button>
     </div>
 
-    <!-- Result Display -->
+    <!-- Result Output -->
     <div class="text-sm space-y-1">
       <p><strong>n:</strong> {{ n }}</p>
       <p><strong>φ(n):</strong> {{ phi }}</p>
@@ -52,29 +52,37 @@
 <script setup>
 import { ref } from 'vue'
 
-// Key inputs
+// User Inputs
 const p = ref(43)
 const q = ref(59)
 const e = ref(13)
+const userInput = ref('STOP')
 
 // RSA values
 const n = ref(0)
 const phi = ref(0)
 const d = ref(0)
 
-// Message state
-const userInput = ref('STOP')
+// Encryption/decryption state
 const ciphertextBlocks = ref([])
 const decryptedMessage = ref('')
 const result = ref('')
-
-// Manual input for ciphertext
 const manualCiphertext = ref('')
 
 // Math helpers
 function gcd(a, b) {
   while (b !== 0) [a, b] = [b, a % b]
   return a
+}
+
+function isPrime(n) {
+  if (n <= 1) return false
+  if (n <= 3) return true
+  if (n % 2 === 0 || n % 3 === 0) return false
+  for (let i = 5; i * i <= n; i += 6) {
+    if (n % i === 0 || n % (i + 2) === 0) return false
+  }
+  return true
 }
 
 function modInverse(a, m) {
@@ -99,7 +107,6 @@ function modPow(base, exponent, modulus) {
   return result
 }
 
-// Encode A-Z → 00–25
 function letterToNumber(text) {
   return text.toUpperCase().split('').map(char => {
     const code = char.charCodeAt(0) - 65
@@ -107,7 +114,6 @@ function letterToNumber(text) {
   }).join('')
 }
 
-// Decode 00–25 → A-Z
 function numberToLetters(digits) {
   const chars = []
   for (let i = 0; i < digits.length; i += 2) {
@@ -117,14 +123,35 @@ function numberToLetters(digits) {
   return chars.join('')
 }
 
-// Generate RSA keys
+function getBlockSize(n) {
+  let size = 2
+  while (true) {
+    const test = '25'.repeat(size / 2)
+    if (BigInt(test) >= BigInt(n)) break
+    size += 2
+  }
+  return size - 2
+}
+
+// Generate keys with validation
 function generateKeys() {
-  n.value = p.value * q.value
-  phi.value = (p.value - 1) * (q.value - 1)
-  if (gcd(e.value, phi.value) !== 1) {
-    result.value = '❌ e must be coprime with φ(n)'
+  if (!isPrime(p.value) || !isPrime(q.value)) {
+    result.value = '❌ p and q must both be prime numbers.'
     return
   }
+  if (p.value === q.value) {
+    result.value = '❌ p and q must be distinct primes.'
+    return
+  }
+
+  n.value = p.value * q.value
+  phi.value = (p.value - 1) * (q.value - 1)
+
+  if (e.value <= 1 || e.value >= phi.value || gcd(e.value, phi.value) !== 1) {
+    result.value = `❌ Invalid e. Must satisfy: 1 < e < φ(n) and gcd(e, φ(n)) = 1. φ(n) = ${phi.value}`
+    return
+  }
+
   d.value = modInverse(e.value, phi.value)
   result.value = `✅ Keys generated! Public key: (${e.value}, ${n.value}) | Private key: (${d.value}, ${n.value})`
   ciphertextBlocks.value = []
@@ -138,12 +165,16 @@ function encryptMessage() {
     return
   }
 
+  const blockSize = getBlockSize(n.value)
   let digits = letterToNumber(userInput.value)
-  if (digits.length % 4 !== 0) digits += '23' // pad with 'X' → 23
+
+  while (digits.length % blockSize !== 0) {
+    digits += '23' // padding with 'X'
+  }
 
   const blocks = []
-  for (let i = 0; i < digits.length; i += 4) {
-    const block = digits.slice(i, i + 4)
+  for (let i = 0; i < digits.length; i += blockSize) {
+    const block = digits.slice(i, i + blockSize)
     const m = BigInt(block)
     const c = modPow(m, BigInt(e.value), BigInt(n.value))
     blocks.push(c.toString())
@@ -160,28 +191,30 @@ function decryptMessage() {
     return
   }
 
+  const blockSize = getBlockSize(n.value)
   const decryptedDigits = ciphertextBlocks.value.map(c => {
     const m = modPow(BigInt(c), BigInt(d.value), BigInt(n.value))
-    return m.toString().padStart(4, '0')
+    return m.toString().padStart(blockSize, '0')
   }).join('')
 
   decryptedMessage.value = numberToLetters(decryptedDigits)
   result.value = `🔓 Decrypted: ${decryptedMessage.value}`
 }
 
-// Manual decrypt from user-input ciphertext
+// Decrypt manual input
 function decryptManual() {
   if (!d.value || !n.value) {
     result.value = '⚠️ Please generate keys first.'
     return
   }
 
+  const blockSize = getBlockSize(n.value)
   const inputBlocks = manualCiphertext.value.trim().split(/\s+/)
   let fullDigits = ''
 
   for (const block of inputBlocks) {
     const m = modPow(BigInt(block), BigInt(d.value), BigInt(n.value))
-    fullDigits += m.toString().padStart(4, '0') // Ensure each block is 4 digits
+    fullDigits += m.toString().padStart(blockSize, '0')
   }
 
   decryptedMessage.value = numberToLetters(fullDigits)
